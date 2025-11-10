@@ -16,13 +16,6 @@
 
 # CODE:
 # MUTATIE
-
-<<<<<<< Updated upstream
-Array_reprezentare=[]
-def mutatie():
-    NrRandom = random(0,100)
-    if(NrRandom <= 5):
-=======
 MAPPING_MOVES = {
     0: (1, 2),
     1: (2, 1),
@@ -81,4 +74,4 @@ for individ in pop_initiala:
 # Afisare individ decodificat
 # for individ in pop_initiala:
 #     print(traducere_individ(individ))
->>>>>>> Stashed changes
+
