@@ -1,5 +1,5 @@
 # Sectiune - Libotean
-
+# reprezentarea individului
 
 # Sectiune - Alex
 # Mutatie si selectie:
