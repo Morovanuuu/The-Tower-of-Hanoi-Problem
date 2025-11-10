@@ -16,16 +16,28 @@ MAPPING_MOVES = {
 # lista tuturor mutarilor posibile
 ALL_MOVES = list(MAPPING_MOVES.keys())
 
-def create_individual(n_disks, max_moves=None):
+def creare_individ(n_disks, max_moves=None):
 
     if max_moves is None:
         optim_moves = (n_disks**2) - 1
         max_moves = optim_moves + 1 # asiguram o mai mare sansa ca individul sa contina solutia optima
 
-    individual = [random.choice(ALL_MOVES) for _ in range(max_moves)]
+    individ = [random.choice(ALL_MOVES) for _ in range(max_moves)]
 
-    return individual
+    return individ
 
-n = create_individual(3)
+# Generarea populatiei intiale
+
+def crearea_generatiei_initiale(n_disks, n_populatie, max_moves=None):
+
+    populatie = []
+
+    for _ in range(n_populatie):
+        individ = creare_individ(n_disks, max_moves)
+        populatie.append(individ)
+
+    return populatie
+
+n = creare_individ(3)
 print(n)
 
