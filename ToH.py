@@ -1,5 +1,5 @@
+import random
 # Mutatie si selectie:
-
 # pentru mutatii ne trebuie un random(0,100) <=5 adica 5%
 # si atunci din arrayul de reprezentarea a individului parcurgand 
 # fiecare pozitie se executa functia de random si daca random e mai 
@@ -13,3 +13,14 @@
 # alta metoda e roata norocului unde fiecare individ are o felie dar 
 # felie e direct proportionala cu fitness ul si atunci cel care are fitnessul 
 # cel mai bun s-ar putea sa aiba felia 30% din roata iar cel mai slab poate sa aiba 1%soun
+
+# CODE:
+# MUTATIE
+
+Array_reprezentare=[]
+def mutatie():
+    NrRandom = random(0,100)
+    if(NrRandom <= 5):
+        
+
+
