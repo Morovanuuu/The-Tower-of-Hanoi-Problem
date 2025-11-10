@@ -1,3 +1,4 @@
+import random
 # Mutatie si selectie:
 
 # pentru mutatii ne trebuie un random(0,100) <=5 adica 5%
