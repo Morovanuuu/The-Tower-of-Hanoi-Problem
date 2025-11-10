@@ -17,7 +17,6 @@ import random
 
 # CODE:
 # MUTATIE
-
 MAPPING_MOVES = {
     0: (1, 2),
     1: (2, 1),
