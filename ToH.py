@@ -59,7 +59,7 @@ def traducere_individ(individ):
 
     return mutari_traduse
 # Funcia lui Moro de fitness
-def calculate_fitness(cromozom, num_disks, tija_initiala=0, tija_tinta=2):
+def calculate_fitness(cromozom, num_disks, tija_initiala=1, tija_tinta=3):
     """
     Fitness(M) = Scor_Stare - Penalizare_Miscare_Invalida - Penalizare_Lungime
     """
@@ -68,7 +68,7 @@ def calculate_fitness(cromozom, num_disks, tija_initiala=0, tija_tinta=2):
     const_penalizare = 2**num_disks
     const_lungime = 0.1
 
-    tije = {i: [] for i in  range(3)}
+    tije = {i: [] for i in  range(1,4)}
     tije[tija_initiala] = list(range(num_disks, 0, -1))
 
     numar_mutari_invalide = 0
@@ -104,21 +104,22 @@ def calculate_fitness(cromozom, num_disks, tija_initiala=0, tija_tinta=2):
     L = len(cromozom)
     penalizare_lungime = const_lungime * max(0, L - lungime_optima)
     fitness = scor_stare - penalizare_invalida - penalizare_lungime
-
     return fitness
 
 # Mutatie in cazul in care fiecare gena are sansa de 5% de a fi modificata
 def mutatie_gena(individ):
-    for individ in pop_initiala:
-        for i in range(len(individ)):
-            nr_aleator = random.randint(0,100)
-            if(nr_aleator)<=5:
-                individ[i] = random.choice(ALL_MOVES)
+    for i in range(len(individ)):
+         nr_aleator = random.randint(0,100)
+         if(nr_aleator)<=5:
+             individ[i] = random.choice(ALL_MOVES)
 
-pop_initiala = crearea_generatiei_initiale(3, 5)
+pop_initiala = crearea_generatiei_initiale(3, 100)
 for individ in pop_initiala:
     mutatie_gena(individ)
-    print(individ)
+    tradus = traducere_individ(individ)
+    print(individ, end=' ')
+    print(calculate_fitness(tradus,3))
+
 
 # Afisare individ decodificat
 # for individ in pop_initiala:
