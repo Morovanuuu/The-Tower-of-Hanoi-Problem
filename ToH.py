@@ -120,7 +120,6 @@ for individ in pop_initiala:
     print(individ, end=' ')
     print(calculate_fitness(tradus,3))
 
-
 # Afisare individ decodificat
 # for individ in pop_initiala:
 #     print(traducere_individ(individ))
