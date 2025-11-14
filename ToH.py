@@ -17,7 +17,7 @@ def calculate_fitness(cromozom, num_disks, tija_initiala=0, tija_tinta=2):
 
     for (sursa, destinatie) in cromozom:
 
-        if sursa not in tije or destinatie not in tije or sursa == destinatie:
+        if sursa == destinatie:
             numar_mutari_invalide +=1
             continue
         #verific daca tija sursa e goala
