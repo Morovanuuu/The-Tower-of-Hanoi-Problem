@@ -4,7 +4,7 @@ import random
 numarIndivizi = 5
 numarDiscuri = 3
 indexSortare = 0 # varibila pentru sortarea tuplurilor in functie de fitness
-
+procentMutatie = 5
 
 # SELECTIE
 # -sortez populatia in functie de fitness si aleg random cativa 
@@ -55,6 +55,7 @@ def traducere_individ(individ):
         mutari_traduse.append(tuplu_mutari)
 
     return mutari_traduse
+
 # Funcia lui Moro de fitness
 def calculate_fitness(cromozom, num_disks, tija_initiala=1, tija_tinta=3):
     """
@@ -107,9 +108,18 @@ def calculate_fitness(cromozom, num_disks, tija_initiala=1, tija_tinta=3):
 def mutatie_gena(individ):
     for i in range(len(individ)):
          nr_aleator = random.randint(0,100)
-         if(nr_aleator)<=5:
+         if(nr_aleator)<=procentMutatie:
              individ[i] = random.choice(ALL_MOVES)
 
+# Crossover cu un punct de taiere
+def crossover(parinte1, parinte2):
+    lungime = len(parinte1)
+    punctTaiere = random.randint(1, lungime -1 )
+    copil1 = parinte1[:punctTaiere] + parinte2[punctTaiere:]  
+    copil2 = parinte2[:punctTaiere] + parinte1[punctTaiere:]
+
+    return copil1, copil2
+        
 # Sortare 
 def sort_tuples(tuples, key_idx):
     key_func = lambda x: x[key_idx]
