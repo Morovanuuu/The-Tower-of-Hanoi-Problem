@@ -1,7 +1,7 @@
 import random
 
 #  variabile globale
-numarIndivizi = 100
+numarIndivizi = 5
 numarDiscuri = 3
 indexSortare = 0 # varibila pentru sortarea tuplurilor in functie de fitness
 
@@ -116,9 +116,20 @@ def sort_tuples(tuples, key_idx):
     sorted_tuples = sorted(tuples, key=key_func, reverse=True)
     return sorted_tuples
 
+# Suma tuturor Fitness - ilor necesara pentru functia de selectie
+def sumaFitnessGeneratie(tuplu,sumaFitness = 0):
+    for i,j in tuplu:
+        sumaFitness += i
+    return sumaFitness
+
+# Procentul fiecarui individ
+def procentRoata(index ,sumaFitness):
+    return round(index/sumaFitness,3)
 
 pop_initiala = crearea_generatiei_initiale(numarDiscuri, numarIndivizi)
 list_fitness = []
+list_selectie = []
+list_procentaj = []
 for individ in pop_initiala:
     mutatie_gena(individ)
     tradus = traducere_individ(individ)
@@ -127,13 +138,22 @@ for individ in pop_initiala:
     #print(calculate_fitness(tradus,3))
     list_fitness.append(fitness)
     
+    
 tuplu = list(zip(list_fitness, pop_initiala))
 sorted_tuplu = sort_tuples(tuplu, indexSortare)
-for i in tuplu:
-    print(i,end='\n')
-print('---SORTED---')   
-for i in sorted_tuplu:
-    print(i,end='\n')
+sumaTuturorFitnesi= sumaFitnessGeneratie(tuplu,indexSortare)  
+for i,j in sorted_tuplu:
+
+    list_procentaj.append(procentRoata(i,sumaTuturorFitnesi))
+
+tuplu = list(zip(list_fitness,list_procentaj,pop_initiala))
+
+for i,j,k in tuplu:
+    print(i,j,k, end="\n")
+
+
+
+
 
 
 #print(tuplu,end='\n')
