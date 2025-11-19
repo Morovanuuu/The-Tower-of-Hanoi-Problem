@@ -1,10 +1,9 @@
 import random
-# Mutatie si selectie:
 
-# pentru mutatii ne trebuie un random(0,100) <=5 adica 5%
-# si atunci din arrayul de reprezentarea a individului parcurgand 
-# fiecare pozitie se executa functia de random si daca random e mai 
-# mic sau = cu 5 atunci se va intampla o mutatie (schimb cu o alta succesiune de mutari, random)
+#  variabile globale
+numarIndivizi = 100
+numarDiscuri = 3
+indexSortare = 0 # varibila pentru sortarea tuplurilor in functie de fitness
 
 
 # SELECTIE
@@ -15,8 +14,6 @@ import random
 # felie e direct proportionala cu fitness ul si atunci cel care are fitnessul 
 # cel mai bun s-ar putea sa aiba felia 30% din roata iar cel mai slab poate sa aiba 1%soun
 
-# CODE:
-# MUTATIE
 MAPPING_MOVES = {
     0: (1, 2),
     1: (2, 1),
@@ -113,13 +110,33 @@ def mutatie_gena(individ):
          if(nr_aleator)<=5:
              individ[i] = random.choice(ALL_MOVES)
 
-pop_initiala = crearea_generatiei_initiale(3, 100)
+# Sortare 
+def sort_tuples(tuples, key_idx):
+    key_func = lambda x: x[key_idx]
+    sorted_tuples = sorted(tuples, key=key_func, reverse=True)
+    return sorted_tuples
+
+
+pop_initiala = crearea_generatiei_initiale(numarDiscuri, numarIndivizi)
+list_fitness = []
 for individ in pop_initiala:
     mutatie_gena(individ)
     tradus = traducere_individ(individ)
-    print(individ, end=' ')
-    print(calculate_fitness(tradus,3))
+    #print(individ, end=' ')
+    fitness = calculate_fitness(tradus, 3)
+    #print(calculate_fitness(tradus,3))
+    list_fitness.append(fitness)
+    
+tuplu = list(zip(list_fitness, pop_initiala))
+sorted_tuplu = sort_tuples(tuplu, indexSortare)
+for i in tuplu:
+    print(i,end='\n')
+print('---SORTED---')   
+for i in sorted_tuplu:
+    print(i,end='\n')
 
+
+#print(tuplu,end='\n')
 # Afisare individ decodificat
 # for individ in pop_initiala:
 #     print(traducere_individ(individ))
