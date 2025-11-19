@@ -127,9 +127,14 @@ def sort_tuples(tuples, key_idx):
     return sorted_tuples
 
 # Suma tuturor Fitness - ilor necesara pentru functia de selectie
-def sumaFitnessGeneratie(tuplu,sumaFitness = 0):
-    for i,j in tuplu:
-        sumaFitness += i
+def sumaFitnessGeneratie(tuplu,sumaFitness = 0.0):
+    tuplu_minim = min(tuplu,key = lambda x : x[0])
+    valoare_minima = tuplu_minim[0]
+    offset = abs(valoare_minima) + 1
+    #sumaFitness += offset
+
+    for element in tuplu:
+        sumaFitness += (element[0] + offset)
     return sumaFitness
 
 # Procentul fiecarui individ
@@ -160,6 +165,8 @@ tuplu = list(zip(list_fitness,list_procentaj,pop_initiala))
 
 for i,j,k in tuplu:
     print(i,j,k, end="\n")
+print("Suma fitnesi:")
+print(sumaFitnessGeneratie(tuplu))
 
 
 
