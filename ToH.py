@@ -27,12 +27,12 @@ MAPPING_MOVES = {
 ALL_MOVES = list(MAPPING_MOVES.keys())
 
 def creare_individ(n_disks, max_moves=None):
-
+    optim_moves = (2**n_disks) - 1
     if max_moves is None:
-        optim_moves = (2**n_disks) - 1
-        max_moves = optim_moves + 1 # asiguram o sansa mai mare ca individul sa contina solutia optima
+        max_moves = optim_moves * 2 # asiguram o sansa mai mare ca individul sa contina solutia optima
 
-    individ = [random.choice(ALL_MOVES) for _ in range(max_moves)]
+    lungime_individ = random.randint(1, max_moves)
+    individ = [random.choice(ALL_MOVES) for _ in range(lungime_individ)]
 
     return individ
 
@@ -113,7 +113,7 @@ def mutatie_gena(individ):
 
 # Crossover cu un punct de taiere
 def crossover(parinte1, parinte2):
-    lungime = len(parinte1)
+    lungime = min(len(parinte1), len(parinte2))
     punctTaiere = random.randint(1, lungime -1 )
     copil1 = parinte1[:punctTaiere] + parinte2[punctTaiere:]  
     copil2 = parinte2[:punctTaiere] + parinte1[punctTaiere:]
