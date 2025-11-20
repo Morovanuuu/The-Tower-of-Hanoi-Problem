@@ -1,18 +1,14 @@
 import random
-
+import time
 #  variabile globale
-numarIndivizi = 10
+numarIndivizi = 100
 numarDiscuri = 3
 indexSortare = 0 # varibila pentru sortarea tuplurilor in functie de fitness
 procentMutatie = 5
-
-# SELECTIE
-# -sortez populatia in functie de fitness si aleg random cativa 
-# indivizi (am nevoie de un mecanism care da sansa mai buna celui cu fitness mai mare pentru a fi alesi) 
-# din care aleg random o pereche de parinti
-# alta metoda e roata norocului unde fiecare individ are o felie dar 
-# felie e direct proportionala cu fitness ul si atunci cel care are fitnessul 
-# cel mai bun s-ar putea sa aiba felia 30% din roata iar cel mai slab poate sa aiba 1%soun
+const_lungime = 1.0
+scorOptimMinim = (2**numarDiscuri) - 1
+limitaStagnare = 10 # numarul de generatii fara imbunatatire a fitness ului maxim
+boostMutatie = 15 # procentul de mutatie in cazul stagnarii
 
 MAPPING_MOVES = {
     0: (1, 2),
@@ -64,7 +60,7 @@ def calculate_fitness(cromozom, num_disks, tija_initiala=1, tija_tinta=3):
     scor_maxim_posibil = (2**num_disks) - 1
     lungime_optima = (2**num_disks) - 1
     const_penalizare = 2**num_disks
-    const_lungime = 0.1
+    #const_lungime = 0.1
 
     tije = {i: [] for i in  range(1,4)}
     tije[tija_initiala] = list(range(num_disks, 0, -1))
@@ -114,6 +110,9 @@ def mutatie_gena(individ):
 # Crossover cu un punct de taiere
 def crossover(parinte1, parinte2):
     lungime = min(len(parinte1), len(parinte2))
+    # in cazul in care un parinte are lungimea 1
+    if lungime <= 1:
+        return parinte1, parinte2
     punctTaiere = random.randint(1, lungime -1 )
     copil1 = parinte1[:punctTaiere] + parinte2[punctTaiere:]  
     copil2 = parinte2[:punctTaiere] + parinte1[punctTaiere:]
@@ -171,6 +170,62 @@ def selectie(populatie, numarParinti):
     
     return parintiSelectati
 
+def creare_generatie_noua(populatieVeche, numarIndivizi):
+
+    parintiSelectati = selectie(populatieVeche, numarIndivizi)
+    generatieNoua = []
+    numarPerechi = numarIndivizi // 2
+    for i in range(numarPerechi):
+        parinte1 = parintiSelectati[i * 2]
+        parinte2 = parintiSelectati[i * 2 + 1]
+
+        copil1, copil2 = crossover(parinte1, parinte2)
+
+        mutatie_gena(copil1)
+        mutatie_gena(copil2)
+
+        generatieNoua.extend([copil1, copil2])
+        return generatieNoua
+
+def rulare_algoritm_genetic(numarGeneratii):
+    global procentMutatie # permite modificarea procentului de mutatie in caz de stagnare
+
+    timpStart = time.time()
+    generatieCurenta = crearea_generatiei_initiale(numarDiscuri, numarIndivizi)
+
+    bestFitness = float('-inf') # setam fitness ul maxim initial la -infinit
+    istoricBestFitness = []
+
+    for generatie in range(numarGeneratii):
+        fitnessuriGeneratie = []
+        cromozomiGeneratie = []
+
+        for individ in generatieCurenta:
+            tradus = traducere_individ(individ)
+            fitness = calculate_fitness(tradus, numarDiscuri)
+            fitnessuriGeneratie.append(fitness)
+            cromozomiGeneratie.append(individ)
+
+        maxFitnessGeneratie = max(fitnessuriGeneratie)
+        index_best = fitnessuriGeneratie.index(maxFitnessGeneratie)
+        bestIndividGeneratie = cromozomiGeneratie[index_best]
+
+        # verificare stagnare
+        if maxFitnessGeneratie > bestFitness:
+            bestFitness = maxFitnessGeneratie
+            stagnare = 0
+            procentMutatie = 5
+        else: 
+            stagnare += 1
+            if stagnare >= limitaStagnare:
+                procentMutatie = boostMutatie
+                stagnare = 0
+        istoricBestFitness.append(bestFitness)
+
+        # conditie de oprire
+        if maxFitnessGeneratie >= scorOptimMinim:
+            timpFinal = time.time()
+            print(f"Solutie gasita in generatia {generatie + 1} '\n' {bestIndividGeneratie} cu fitness {maxFitnessGeneratie} '\n' timp de rulare: {timpFinal - timpStart} '\n' solutie tradusă: {traducere_individ(bestIndividGeneratie)} '\n'")
 
 pop_initiala = crearea_generatiei_initiale(numarDiscuri, numarIndivizi)
 list_fitness = []
@@ -185,27 +240,44 @@ for individ in pop_initiala:
     #print(calculate_fitness(tradus,3))
     list_fitness.append(fitness)  
     
-tuplu = list(zip(list_fitness, pop_initiala))
-sumaTuturorFitnesi= suma_fitness_generatie(tuplu,indexSortare)  
 
-for i,j in tuplu:
-    list_procentaj.append(procent_roata(i,sumaTuturorFitnesi[0]))
 
-tuplu = list(zip(list_fitness,list_procentaj,pop_initiala))
-sorted_tuplu = sort_tupluri(tuplu, indexSortare)
 
-for i,j,k in sorted_tuplu:
-    print(i,j,k, end="\n")
-print("Suma fitnesi:")
-print(suma_fitness_generatie(tuplu))
 
-print("--- Perechi de parinti ---")
-parintiSelectati = selectie(pop_initiala, numarIndivizi)  
+# tuplu = list(zip(list_fitness, pop_initiala))
+# sumaTuturorFitnesi= suma_fitness_generatie(tuplu,indexSortare)  
 
-for i, parinte in enumerate(parintiSelectati):
-    print(f"Parinte {i+1}: {parinte}")
-    if i % 2 != 0:
-        print("-----")
+# for i,j in tuplu:
+#     list_procentaj.append(procent_roata(i,sumaTuturorFitnesi[0]))
+
+# tuplu = list(zip(list_fitness,list_procentaj,pop_initiala))
+# sorted_tuplu = sort_tupluri(tuplu, indexSortare)
+
+# for i,j,k in sorted_tuplu:
+#     print(i,j,k, end="\n")
+# print("Suma fitnesi:")
+# print(suma_fitness_generatie(tuplu))
+
+# print("--- Perechi de parinti ---")
+# parintiSelectati = selectie(pop_initiala, numarIndivizi)  
+
+# for i, parinte in enumerate(parintiSelectati):
+#     print(f"Parinte {i+1}: {parinte}")
+#     if i % 2 != 0:
+#         print("-----")
+
+# for i in range(0, len(parintiSelectati), 2):
+#     parinte1 = parintiSelectati[i]
+#     parinte2 = parintiSelectati[i+1]
+#     fitnessParinte1 = calculate_fitness(traducere_individ(parinte1), numarDiscuri)
+#     fitnessParinte2 = calculate_fitness(traducere_individ(parinte2), numarDiscuri)
+#     copil1, copil2 = crossover(parinte1, parinte2)
+#     fitnessCopil1 = calculate_fitness(traducere_individ(copil1), numarDiscuri)
+#     fitnessCopil2 = calculate_fitness(traducere_individ(copil2), numarDiscuri)
+#     print(f"Crossover Parinte {i+1}: {parinte1} -> [{fitnessParinte1}] & Parinte {i+2}: {parinte2} -> [{fitnessParinte2}]: ")
+#     print(f" Copil 1: {copil1} '\n', fitness: {fitnessCopil1}")
+#     print(f" Copil 2: {copil2} '\n', fitness: {fitnessCopil2}")
+#     print("-----")
 
 #print(tuplu,end='\n')
 # Afisare individ decodificat
