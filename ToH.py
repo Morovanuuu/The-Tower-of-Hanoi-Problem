@@ -123,7 +123,7 @@ def mutatie_gena(individ):
     if random.randint(0,100) <= procentMutatieLungime:
         operatie = random.choice(['adaugare','stergere'])
 
-        k = random.randint(1,3)
+        k = 1
 
         if operatie == 'stergere' and lungime <= scorOptimMinim:
             operatie = 'adaugare'
@@ -203,9 +203,9 @@ def selectie(populatie, numarParinti):
 
 def creare_generatie_noua(populatieVeche, numarIndivizi):
 
-    parintiSelectati = selectie(populatieVeche, numarIndivizi)
+    parintiSelectati = selectie(populatieVeche, numarIndivizi * 2)
     generatieNoua = []
-    numarPerechi = numarIndivizi // 2
+    numarPerechi = numarIndivizi
     for i in range(numarPerechi):
         parinte1 = parintiSelectati[i * 2]
         parinte2 = parintiSelectati[i * 2 + 1]
@@ -215,7 +215,17 @@ def creare_generatie_noua(populatieVeche, numarIndivizi):
         copil1 = mutatie_gena(copil1)
         copil2 = mutatie_gena(copil2)
 
-        generatieNoua.extend([copil1, copil2])
+        tradusCopil1 = traducere_individ(copil1)
+        tradusCopil2 = traducere_individ(copil2)
+        fitnessCopil1 = calculate_fitness(tradusCopil1,numarDiscuri)
+        fitnessCopil2 = calculate_fitness(tradusCopil2,numarDiscuri)
+
+        if fitnessCopil1 > fitnessCopil2:
+            copilFavorit = copil1
+        else:
+            copilFavorit = copil2
+
+        generatieNoua.append(copilFavorit)
     return generatieNoua
 
 def rulare_algoritm_genetic():
