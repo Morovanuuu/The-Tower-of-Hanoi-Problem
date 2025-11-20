@@ -5,10 +5,10 @@ numarIndivizi = 100
 numarDiscuri = 3
 indexSortare = 0 # varibila pentru sortarea tuplurilor in functie de fitness
 procentMutatie = 5
-const_lungime = 1.0
+const_lungime = 3.0
 scorOptimMinim = (2**numarDiscuri) - 1
 limitaStagnare = 10 # numarul de generatii fara imbunatatire a fitness ului maxim
-boostMutatie = 15 # procentul de mutatie in cazul stagnarii
+boostMutatie = 30 # procentul de mutatie in cazul stagnarii
 
 MAPPING_MOVES = {
     0: (1, 2),
@@ -25,9 +25,9 @@ ALL_MOVES = list(MAPPING_MOVES.keys())
 def creare_individ(n_disks, max_moves=None):
     optim_moves = (2**n_disks) - 1
     if max_moves is None:
-        max_moves = optim_moves * 2 # asiguram o sansa mai mare ca individul sa contina solutia optima
+        max_moves = optim_moves * 2 
 
-    lungime_individ = random.randint(1, max_moves)
+    lungime_individ = random.randint(optim_moves//2, max_moves)
     individ = [random.choice(ALL_MOVES) for _ in range(lungime_individ)]
 
     return individ
@@ -104,7 +104,7 @@ def calculate_fitness(cromozom, num_disks, tija_initiala=1, tija_tinta=3):
 def mutatie_gena(individ):
     for i in range(len(individ)):
          nr_aleator = random.randint(0,100)
-         if(nr_aleator)<=procentMutatie:
+         if nr_aleator <= procentMutatie:
              individ[i] = random.choice(ALL_MOVES)
 
 # Crossover cu un punct de taiere
@@ -112,7 +112,7 @@ def crossover(parinte1, parinte2):
     lungime = min(len(parinte1), len(parinte2))
     # in cazul in care un parinte are lungimea 1
     if lungime <= 1:
-        return parinte1, parinte2
+        return list(parinte1), list(parinte2)
     punctTaiere = random.randint(1, lungime -1 )
     copil1 = parinte1[:punctTaiere] + parinte2[punctTaiere:]  
     copil2 = parinte2[:punctTaiere] + parinte1[punctTaiere:]
@@ -185,7 +185,7 @@ def creare_generatie_noua(populatieVeche, numarIndivizi):
         mutatie_gena(copil2)
 
         generatieNoua.extend([copil1, copil2])
-        return generatieNoua
+    return generatieNoua
 
 def rulare_algoritm_genetic(numarGeneratii):
     global procentMutatie # permite modificarea procentului de mutatie in caz de stagnare
@@ -195,6 +195,7 @@ def rulare_algoritm_genetic(numarGeneratii):
 
     bestFitness = float('-inf') # setam fitness ul maxim initial la -infinit
     istoricBestFitness = []
+    stagnare = 0
 
     for generatie in range(numarGeneratii):
         fitnessuriGeneratie = []
@@ -225,24 +226,36 @@ def rulare_algoritm_genetic(numarGeneratii):
         # conditie de oprire
         if maxFitnessGeneratie >= scorOptimMinim:
             timpFinal = time.time()
-            print(f"Solutie gasita in generatia {generatie + 1} '\n' {bestIndividGeneratie} cu fitness {maxFitnessGeneratie} '\n' timp de rulare: {timpFinal - timpStart} '\n' solutie tradusă: {traducere_individ(bestIndividGeneratie)} '\n'")
+            timpRulare = timpFinal - timpStart
+            minute = int(timpRulare // 60)
+            secunde = timpRulare % 60
+            print(f"Solutie gasita in generatia {generatie + 1} '\n' {bestIndividGeneratie} cu fitness {maxFitnessGeneratie} '\n' timp de rulare: {minute} minute si {secunde} secunde '\n' solutie tradusă: {traducere_individ(bestIndividGeneratie)} '\n'")
+            return
+        
+        generatieCurenta = creare_generatie_noua(generatieCurenta, numarIndivizi)
+        
+        if (generatie + 1) % 500 == 0:
+             print(f"Generatia {generatie + 1}: Max Fitness = {maxFitnessGeneratie:.4f}")
+             #sort_tupluri(list(zip(fitnessuriGeneratie, cromozomiGeneratie)), 0)[:1]
+             print(f" Best individ: {bestIndividGeneratie} Tradus: {traducere_individ(bestIndividGeneratie)}")
+maxGeneratii = 10000
 
-pop_initiala = crearea_generatiei_initiale(numarDiscuri, numarIndivizi)
-list_fitness = []
-list_selectie = []
-list_procentaj = []
-
-for individ in pop_initiala:
-    mutatie_gena(individ)
-    tradus = traducere_individ(individ)
-    #print(individ, end=' ')
-    fitness = calculate_fitness(tradus, numarDiscuri)
-    #print(calculate_fitness(tradus,3))
-    list_fitness.append(fitness)  
-    
+print("START ALGORITM GENETIC")
+rulare_algoritm_genetic(maxGeneratii)
 
 
+# pop_initiala = crearea_generatiei_initiale(numarDiscuri, numarIndivizi)
+# list_fitness = []
+# list_selectie = []
+# list_procentaj = []
 
+# for individ in pop_initiala:
+#     mutatie_gena(individ)
+#     tradus = traducere_individ(individ)
+#     #print(individ, end=' ')
+#     fitness = calculate_fitness(tradus, numarDiscuri)
+#     #print(calculate_fitness(tradus,3))
+#     list_fitness.append(fitness)  
 
 # tuplu = list(zip(list_fitness, pop_initiala))
 # sumaTuturorFitnesi= suma_fitness_generatie(tuplu,indexSortare)  
