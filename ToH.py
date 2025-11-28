@@ -59,10 +59,6 @@ def traducere_individ(individ):
 
 # Funcia lui Moro de fitness
 def calculate_fitness(cromozom, num_disks, tija_initiala=1, tija_tinta=3):
-    """
-    Fitness(M) = Scor_Stare - Penalizare_Miscare_Invalida - Penalizare_Lungime
-    mic tweak: penalizare_incompleta pentru discurile care nu sunt pe tija tinta
-    """
     scor_maxim_posibil = (2**num_disks) - 1
     lungime_optima = (2**num_disks) - 1
     const_penalizare = num_disks
@@ -140,6 +136,23 @@ def mutatie_gena(individ):
                individ.pop(pozitie)
     return individ
 
+def reparare_individ(individ):
+    perechiOpuse = {0:1, 1:0, 2:3, 3:2, 4:5, 5:4}
+
+    i = 0
+    while i < len(individ) - 1:
+        miscareCurenta = individ[i]
+        miscareUrmatoare = individ[i+1]
+
+        if perechiOpuse.get(miscareCurenta) == miscareUrmatoare:
+            del individ[i]
+            del individ[i]
+        
+            if i > 0:
+                i -= 1
+        else: 
+            i += 1
+        
 # Crossover cu un punct de taiere
 def crossover(parinte1, parinte2):
     lungime = min(len(parinte1), len(parinte2))
@@ -150,7 +163,9 @@ def crossover(parinte1, parinte2):
     copil1 = parinte1[:punctTaiere] + parinte2[punctTaiere:]  
     copil2 = parinte2[:punctTaiere] + parinte1[punctTaiere:]
 
-    return copil1, copil2
+    copil1Reparat = reparare_individ(copil1)
+    copil2Reparat = reparare_individ(copil2)
+    return copil1Reparat, copil2Reparat
         
 # Sortare 
 def sort_tupluri(tuples, key_idx):
