@@ -1,17 +1,17 @@
 import random
 import time
 #  variabile globale
-numarIndivizi = 200
-numarDiscuri = 4
+numarIndivizi = 500
+numarDiscuri = 5
 indexSortare = 0 # varibila pentru sortarea tuplurilor in functie de fitness
-procentMutatieMiscari = 5
+procentMutatieMiscari = 4
 procentMutatieLungime = 5
-const_lungime = 0.1
+const_lungime = 0.0
 scorOptimMinim = (2**numarDiscuri) - 1
-limitaStagnare = 30 # numarul de generatii fara imbunatatire a fitness ului maxim
-boostMutatieMiscari = 35 # procentul de mutatie in cazul stagnarii
-boostMutatieLungime = 35
-boostGeneratii = 5
+limitaStagnare = 50 # numarul de generatii fara imbunatatire a fitness ului maxim
+boostMutatieMiscari = 40 # procentul de mutatie in cazul stagnarii
+boostMutatieLungime = 40
+boostGeneratii = 8
 penalizare_destinatie = 5
 
 MAPPING_MOVES = {
@@ -200,6 +200,28 @@ def suma_fitness_generatie(tuplu,sumaFitness = 0.0):
 def procent_roata(index ,sumaFitness):
     return round(index/sumaFitness,3)
 
+def selectie_turnir(populatie, marimeTurnir=4):
+
+    competitori = random.sample(populatie, marimeTurnir)
+
+    best_competitor = competitori[0]
+
+    for candidat in competitori:
+        if candidat[0] > best_competitor[0]:
+            best_competitor = candidat
+    return best_competitor[1]
+    # bestIndivid = competitori[0]
+    # bestFitness = -1000
+
+    # for i in competitori:
+    #     tradus = traducere_individ(i)
+    #     fit = calculate_fitness(tradus, numarDiscuri)
+    #     if fit > bestFitness:
+    #         bestFitness = fit
+    #         bestIndivid = i
+    
+    # return bestIndivid
+
 # Selectie roata
 def selectie(populatie, numarParinti):
     listFitness = []
@@ -230,7 +252,7 @@ def selectie(populatie, numarParinti):
     
     return parintiSelectati
 
-def creare_generatie_noua(populatieVeche, numarIndivizi):
+def creare_generatie_noua(populatieVeche, numarIndivizi, numarGeneratie):
     # Elitism 
     numarElite = 2
     populatie_cu_fitness = []
@@ -247,19 +269,22 @@ def creare_generatie_noua(populatieVeche, numarIndivizi):
         generatieNoua.append(elite_individ)
     
     numarRestant = numarIndivizi - numarElite
-    parintiSelectati = selectie(populatieVeche, numarRestant * 2)
+    #parintiSelectati = selectie(populatieVeche, numarRestant * 2)
+
+    activeazaReparare = (numarGeneratie % 100 == 0)
 
     for i in range(numarRestant):
-        parinte1 = parintiSelectati[i * 2]
-        parinte2 = parintiSelectati[i * 2 + 1]
+        parinte1 = selectie_turnir(populatie_cu_fitness)
+        parinte2 = selectie_turnir(populatie_cu_fitness)
 
         copil1, copil2 = crossover(parinte1, parinte2)
 
         copil1 = mutatie_gena(copil1)
         copil2 = mutatie_gena(copil2)
 
-        # copil1Reparat = reparare_individ(copil1)
-        # copil2Reparat = reparare_individ(copil2)
+        if activeazaReparare:
+            copil1 = reparare_individ(copil1)
+            copil2 = reparare_individ(copil2)
 
         tradusCopil1 = traducere_individ(copil1)
         tradusCopil2 = traducere_individ(copil2)
@@ -332,7 +357,7 @@ def rulare_algoritm_genetic(maxGeneratii):
             print(f"Solutie gasita in generatia {generatie + 1} '\n' {bestIndividGeneratie} cu fitness {maxFitnessGeneratie} '\n' timp de rulare: {minute} minute si {secunde} secunde '\n' solutie tradusa: {traducere_individ(bestIndividGeneratie)} '\n'")
             return
         
-        generatieCurenta = creare_generatie_noua(generatieCurenta, numarIndivizi)
+        generatieCurenta = creare_generatie_noua(generatieCurenta, numarIndivizi, generatie)
         
         if (generatie + 1) % 100 == 0:
             print(f"Generatia {generatie + 1}: Max Fitness = {maxFitnessGeneratie:.4f}")
