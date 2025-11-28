@@ -6,7 +6,7 @@ numarDiscuri = 4
 indexSortare = 0 # varibila pentru sortarea tuplurilor in functie de fitness
 procentMutatieMiscari = 5
 procentMutatieLungime = 5
-const_lungime = 3.0
+const_lungime = 0.0
 scorOptimMinim = (2**numarDiscuri) - 1
 limitaStagnare = 30 # numarul de generatii fara imbunatatire a fitness ului maxim
 boostMutatieMiscari = 35 # procentul de mutatie in cazul stagnarii
@@ -32,7 +32,7 @@ def creare_individ(n_disks, max_moves=None):
         max_moves = optim_moves * 2 
 
     #lungime_individ = random.randint(optim_moves, max_moves)
-    lungime_individ = optim_moves
+    lungime_individ = optim_moves * 2
     individ = [random.choice(ALL_MOVES) for _ in range(lungime_individ)]
 
     return individ
@@ -121,23 +121,25 @@ def mutatie_gena(individ):
              individ[i] = random.choice(ALL_MOVES)
 
     # mutatie pe lungime individ
-    # if random.randint(0,100) <= procentMutatieLungime:
-    #     operatie = random.choice(['adaugare','stergere'])
+    if random.randint(0,100) <= procentMutatieLungime:
+       operatie = random.choice(['adaugare','stergere'])
+       
+       # nu permitem stergerea daca suntem deja sub optim
+       scorOptimMinim = (2**numarDiscuri) - 1
+       if operatie == 'stergere' and len(individ) <= scorOptimMinim:
+           operatie = 'adaugare'
 
-    #     k = 1
-    #     if operatie == 'stergere' and lungime <= scorOptimMinim:
-    #         operatie = 'adaugare'
-
-    #     if operatie == 'adaugare':
-    #         for _ in range(k):
-    #             pozitie = random.randint(0, len(individ))
-    #             individ.insert(pozitie, random.choice(ALL_MOVES))
-    #     elif operatie == 'stergere':
-    #         if len(individ) > k:
-    #             for _ in range(k):
-    #                 pozitie = random.randint(0, len(individ) - 1)
-    #                 individ.pop(pozitie)
+       if operatie == 'adaugare':
+           # adaugam o mutare aleatoare undeva
+           pozitie = random.randint(0, len(individ))
+           individ.insert(pozitie, random.choice(ALL_MOVES))
+       elif operatie == 'stergere':
+           # stergem o mutare aleatoare
+           if len(individ) > 1:
+               pozitie = random.randint(0, len(individ) - 1)
+               individ.pop(pozitie)
     return individ
+
 # Crossover cu un punct de taiere
 def crossover(parinte1, parinte2):
     lungime = min(len(parinte1), len(parinte2))
@@ -202,11 +204,25 @@ def selectie(populatie, numarParinti):
     return parintiSelectati
 
 def creare_generatie_noua(populatieVeche, numarIndivizi):
-
-    parintiSelectati = selectie(populatieVeche, numarIndivizi * 2)
+    # Elitism 
+    numarElite = 2
+    populatie_cu_fitness = []
+    for individ in populatieVeche:
+        tradus = traducere_individ(individ)
+        fit = calculate_fitness(tradus, numarDiscuri)
+        populatie_cu_fitness.append((fit, individ))
+    
+    populatie_cu_fitness.sort(key=lambda x: x[0], reverse=True)
     generatieNoua = []
-    numarPerechi = numarIndivizi
-    for i in range(numarPerechi):
+    
+    for i in range(numarElite):
+        elite_individ = list(populatie_cu_fitness[i][1])
+        generatieNoua.append(elite_individ)
+    
+    numarRestant = numarIndivizi - numarElite
+    parintiSelectati = selectie(populatieVeche, numarRestant * 2)
+
+    for i in range(numarRestant):
         parinte1 = parintiSelectati[i * 2]
         parinte2 = parintiSelectati[i * 2 + 1]
 
@@ -239,8 +255,8 @@ def rulare_algoritm_genetic(maxGeneratii):
     istoricBestFitness = []
     stagnare = 0
     generatie = 1
-    for generatie in range(maxGeneratii):
-    #while True:
+    #for generatie in range(maxGeneratii):
+    while True:
         fitnessuriGeneratie = []
         cromozomiGeneratie = []
 
@@ -298,7 +314,7 @@ def rulare_algoritm_genetic(maxGeneratii):
     istoricBestFitness.sort(reverse=True)
     print(istoricBestFitness[0:5])
 
-maxGeneratii = 2000
+maxGeneratii = 1000
 
 print("START ALGORITM GENETIC")
 rulare_algoritm_genetic(maxGeneratii)
