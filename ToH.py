@@ -2,16 +2,16 @@ import random
 import time
 #  variabile globale
 numarIndivizi = 500
-numarDiscuri = 5
+numarDiscuri = 4
 indexSortare = 0 # varibila pentru sortarea tuplurilor in functie de fitness
-procentMutatieMiscari = 4
-procentMutatieLungime = 5
+procentMutatieMiscari = 10
+procentMutatieLungime = 10
 const_lungime = 0.0
 scorOptimMinim = (2**numarDiscuri) - 1
-limitaStagnare = 50 # numarul de generatii fara imbunatatire a fitness ului maxim
-boostMutatieMiscari = 40 # procentul de mutatie in cazul stagnarii
-boostMutatieLungime = 40
-boostGeneratii = 8
+limitaStagnare = 20 # numarul de generatii fara imbunatatire a fitness ului maxim
+boostMutatieMiscari = 35 # procentul de mutatie in cazul stagnarii
+boostMutatieLungime = 35
+boostGeneratii = 5
 penalizare_destinatie = 5
 
 MAPPING_MOVES = {
@@ -108,11 +108,16 @@ def calculate_fitness(cromozom, num_disks, tija_initiala=1, tija_tinta=3):
     # for disc in tija_finala:
     #     scor_stare += (2**(disc - 1))
 
-    penalizare_invalida = const_penalizare * numar_mutari_invalide # 4 * 5 = 20
+    penalizare_invalida = const_penalizare * numar_mutari_invalide 
+    # fitness = scor_stare - penalizare_invalida
     L = len(cromozom)
     penalizare_lungime = const_lungime * max(0, L - lungime_optima)
+    # if scor_stare == scor_maxim_posibil and numar_mutari_invalide == 0:
+    #     fitness += 100
+    #     penalizare_lungime = 2.0 * max(0, L - lungime_optima)
+    #     fitness -= penalizare_lungime
     #fitness = scor_stare - penalizare_invalida - penalizare_incompleta - penalizare_lungime
-    fitness = scor_stare - penalizare_invalida - penalizare_lungime # 4 discuri 8 + 4 + 2 + 1
+    fitness = scor_stare - penalizare_invalida - penalizare_lungime 
     return fitness
 
 # Mutatie in cazul in care fiecare gena are sansa de 5% de a fi modificata
@@ -200,7 +205,7 @@ def suma_fitness_generatie(tuplu,sumaFitness = 0.0):
 def procent_roata(index ,sumaFitness):
     return round(index/sumaFitness,3)
 
-def selectie_turnir(populatie, marimeTurnir=4):
+def selectie_turnir(populatie, marimeTurnir=2):
 
     competitori = random.sample(populatie, marimeTurnir)
 
