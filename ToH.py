@@ -1,18 +1,18 @@
 import random
 import time
+
 #  variabile globale
-numarIndivizi = 500
-numarDiscuri = 4
+numarIndivizi = 600 # (500)
+numarDiscuri = 5 # 4
 indexSortare = 0 # varibila pentru sortarea tuplurilor in functie de fitness
 procentMutatieMiscari = 10
 procentMutatieLungime = 10
-const_lungime = 0.0
+const_lungime = 0.1
 scorOptimMinim = (2**numarDiscuri) - 1
-limitaStagnare = 20 # numarul de generatii fara imbunatatire a fitness ului maxim
-boostMutatieMiscari = 35 # procentul de mutatie in cazul stagnarii
-boostMutatieLungime = 35
+limitaStagnare = 50 # numarul de generatii fara imbunatatire a fitness ului maxim (20)
+boostMutatieMiscari = 40 # procentul de mutatie in cazul stagnarii (35)
+boostMutatieLungime = 40 # (35)
 boostGeneratii = 5
-penalizare_destinatie = 5
 
 MAPPING_MOVES = {
     0: (1, 2),
@@ -23,7 +23,7 @@ MAPPING_MOVES = {
     5: (3, 2)
 }
 
-# Lista tuturor mutarilor posibile
+# lista tuturor mutarilor posibile
 ALL_MOVES = list(MAPPING_MOVES.keys())
 
 def creare_individ(n_disks, max_moves=None):
@@ -31,13 +31,12 @@ def creare_individ(n_disks, max_moves=None):
     if max_moves is None:
         max_moves = optim_moves * 2 
 
-    #lungime_individ = random.randint(optim_moves, max_moves)
     lungime_individ = optim_moves * 2
     individ = [random.choice(ALL_MOVES) for _ in range(lungime_individ)]
 
     return individ
 
-# Generarea populatiei intiale
+# generarea populatiei intiale
 def crearea_generatiei_initiale(n_disks, n_populatie, max_moves=None):
 
     populatie = []
@@ -47,7 +46,7 @@ def crearea_generatiei_initiale(n_disks, n_populatie, max_moves=None):
 
     return populatie
 
-# Traduce mutarile din codificarea individului in mutarile efective
+# traduce mutarile din codificarea individului in mutarile efective
 def traducere_individ(individ):
 
     mutari_traduse = []
@@ -57,12 +56,10 @@ def traducere_individ(individ):
 
     return mutari_traduse
 
-# Funcia lui Moro de fitness
+# functia lui Moro de fitness
 def calculate_fitness(cromozom, num_disks, tija_initiala=1, tija_tinta=3):
-    scor_maxim_posibil = (2**num_disks) - 1
     lungime_optima = (2**num_disks) - 1
     const_penalizare = num_disks // 2
-    #const_lungime = 0.1
 
     tije = {i: [] for i in  range(1,4)}
     tije[tija_initiala] = list(range(num_disks, 0, -1))
@@ -90,33 +87,21 @@ def calculate_fitness(cromozom, num_disks, tija_initiala=1, tija_tinta=3):
 
     for k in range(num_disks, 0, -1):
         pos_k = -1
-        # Gasim unde e discul k
         for tija_idx, continut in tije.items():
             if k in continut:
                 pos_k = tija_idx
                 break
         
         if pos_k == tija_finala:
-            # E bine plasat, primeste puncte exponentiale
+            # e bine plasat
             scor_stare += 2 ** (k-1)
         else:
-            # Nu e bine plasat.
-            # Tinta pentru discul k-1 devine tija auxiliara!
-            # (Suma indecsilor tijelor e 1+2+3=6)
+            # nu e bine plasat
             tija_finala = 6 - pos_k - tija_finala
 
-    # for disc in tija_finala:
-    #     scor_stare += (2**(disc - 1))
-
     penalizare_invalida = const_penalizare * numar_mutari_invalide 
-    # fitness = scor_stare - penalizare_invalida
     L = len(cromozom)
     penalizare_lungime = const_lungime * max(0, L - lungime_optima)
-    # if scor_stare == scor_maxim_posibil and numar_mutari_invalide == 0:
-    #     fitness += 100
-    #     penalizare_lungime = 2.0 * max(0, L - lungime_optima)
-    #     fitness -= penalizare_lungime
-    #fitness = scor_stare - penalizare_invalida - penalizare_incompleta - penalizare_lungime
     fitness = scor_stare - penalizare_invalida - penalizare_lungime 
     return fitness
 
@@ -133,10 +118,9 @@ def mutatie_gena(individ):
     # mutatie pe lungime individ
     if random.randint(0,100) <= procentMutatieLungime:
         operatie = random.choice(['adaugare','stergere'])
-        scorOptimMinim = (2**numarDiscuri) - 1
-        if len(individ) == scorOptimMinim:
-            return individ
-       # nu permitem stergerea daca suntem deja sub optim
+        # if len(individ) == scorOptimMinim:
+        #     return individ
+        # nu permitem stergerea daca suntem deja sub optim
         if operatie == 'stergere' and len(individ) < scorOptimMinim:
             operatie = 'adaugare'
 
@@ -158,7 +142,6 @@ def reparare_individ(individ):
     while i < len(individ) - 1:
         miscareCurenta = individ[i]
         miscareUrmatoare = individ[i+1]
-
         if perechiOpuse.get(miscareCurenta) == miscareUrmatoare:
             del individ[i]
             del individ[i]
@@ -178,18 +161,8 @@ def crossover(parinte1, parinte2):
     punctTaiere = random.randint(1, lungime -1 )
     copil1 = parinte1[:punctTaiere] + parinte2[punctTaiere:]  
     copil2 = parinte2[:punctTaiere] + parinte1[punctTaiere:]
-
-    # copil1Reparat = reparare_individ(copil1)
-    # copil2Reparat = reparare_individ(copil2)
-    # return copil1Reparat, copil2Reparat
     return copil1, copil2
         
-# Sortare 
-def sort_tupluri(tuples, key_idx):
-    key_func = lambda x: x[key_idx]
-    sorted_tuples = sorted(tuples, key=key_func, reverse=True)
-    return sorted_tuples
-
 # Suma tuturor Fitness - ilor necesara pentru functia de selectie
 def suma_fitness_generatie(tuplu,sumaFitness = 0.0):
     tuplu_minim = min(tuplu,key = lambda x : x[0])
@@ -201,10 +174,6 @@ def suma_fitness_generatie(tuplu,sumaFitness = 0.0):
         sumaFitness += (element[0] + offset)
     return sumaFitness, offset
 
-# Procentul fiecarui individ
-def procent_roata(index ,sumaFitness):
-    return round(index/sumaFitness,3)
-
 def selectie_turnir(populatie, marimeTurnir=2):
 
     competitori = random.sample(populatie, marimeTurnir)
@@ -215,19 +184,8 @@ def selectie_turnir(populatie, marimeTurnir=2):
         if candidat[0] > best_competitor[0]:
             best_competitor = candidat
     return best_competitor[1]
-    # bestIndivid = competitori[0]
-    # bestFitness = -1000
 
-    # for i in competitori:
-    #     tradus = traducere_individ(i)
-    #     fit = calculate_fitness(tradus, numarDiscuri)
-    #     if fit > bestFitness:
-    #         bestFitness = fit
-    #         bestIndivid = i
-    
-    # return bestIndivid
-
-# Selectie roata
+# selectie roata
 def selectie(populatie, numarParinti):
     listFitness = []
 
@@ -258,7 +216,7 @@ def selectie(populatie, numarParinti):
     return parintiSelectati
 
 def creare_generatie_noua(populatieVeche, numarIndivizi, numarGeneratie):
-    # Elitism 
+    # elitism 
     numarElite = 2
     populatie_cu_fitness = []
     for individ in populatieVeche:
@@ -274,10 +232,9 @@ def creare_generatie_noua(populatieVeche, numarIndivizi, numarGeneratie):
         generatieNoua.append(elite_individ)
     
     numarRestant = numarIndivizi - numarElite
-    #parintiSelectati = selectie(populatieVeche, numarRestant * 2)
+    activeazaReparare = (numarGeneratie % 20 == 0)
 
-    activeazaReparare = (numarGeneratie % 100 == 0)
-
+    # selectie
     for i in range(numarRestant):
         parinte1 = selectie_turnir(populatie_cu_fitness)
         parinte2 = selectie_turnir(populatie_cu_fitness)
@@ -305,7 +262,7 @@ def creare_generatie_noua(populatieVeche, numarIndivizi, numarGeneratie):
     return generatieNoua
 
 def rulare_algoritm_genetic(maxGeneratii):
-    global procentMutatieMiscari # permite modificarea procentului de mutatie in caz de stagnare
+    global procentMutatieMiscari
     global procentMutatieLungime, boostGeneratii
 
     timpStart = time.time()
@@ -342,7 +299,6 @@ def rulare_algoritm_genetic(maxGeneratii):
             stagnare += 1
             if stagnare >= limitaStagnare and boostGeneratii == 0:
                 boostGeneratii = 5
-                print(f"Stagnare detectata in generatia {generatie + 1}, marire procent mutatie.")
                 procentMutatieMiscari = boostMutatieMiscari
                 procentMutatieLungime = boostMutatieLungime
                 stagnare = 0
@@ -359,14 +315,14 @@ def rulare_algoritm_genetic(maxGeneratii):
             timpRulare = timpFinal - timpStart
             minute = int(timpRulare // 60)
             secunde = timpRulare % 60
-            print(f"Solutie gasita in generatia {generatie + 1} '\n' {bestIndividGeneratie} cu fitness {maxFitnessGeneratie} '\n' timp de rulare: {minute} minute si {secunde} secunde '\n' solutie tradusa: {traducere_individ(bestIndividGeneratie)} '\n'")
+            reparat = reparare_individ(bestIndividGeneratie)
+            print(f"Solutie gasita in generatia {generatie + 1}'\n' {reparat}, lungime = {len(reparat)} cu fitness {maxFitnessGeneratie}'\n' timp de rulare: {minute} minute si {secunde} secunde'\n' solutie tradusa: {traducere_individ(reparat)} '\n'")
             return
         
         generatieCurenta = creare_generatie_noua(generatieCurenta, numarIndivizi, generatie)
         
         if (generatie + 1) % 100 == 0:
             print(f"Generatia {generatie + 1}: Max Fitness = {maxFitnessGeneratie:.4f}")
-            #  print(f" Best individ: {bestIndividGeneratie} Tradus: {traducere_individ(bestIndividGeneratie)}")
             print(f" Best individ: {bestIndividGeneratie}")
             print("="*50)
             istoricBestFitness.append((maxFitnessGeneratie, generatie))
@@ -379,10 +335,3 @@ maxGeneratii = 1000
 
 print("START ALGORITM GENETIC")
 rulare_algoritm_genetic(maxGeneratii)
-
-# individ = [0, 2, 1, 0, 4, 3, 2, 3, 0, 4, 0, 5, 4, 1, 0, 5, 1, 5, 0, 2, 4, 1, 3, 4, 0, 2, 4]
-# reparat = reparare_individ(individ)
-# tradus = traducere_individ(reparat)
-# fitness = calculate_fitness(tradus, 4)
-
-# print(reparat, fitness)
